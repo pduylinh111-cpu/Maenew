@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Trắc nghiệm Độc lập & Phụ thuộc tuyến tính</title>
+
+<!-- MathJax -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']]
+  }
+};
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial;
+    background:#f4f7fb;
+    padding:30px;
+    color:#222;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+}
+
+header{
+    text-align:center;
+    margin-bottom:40px;
+}
+
+header h1{
+    color:#0055aa;
+    margin-bottom:10px;
+}
+
+header p{
+    color:#555;
+}
+
+.progress-container{
+    width:100%;
+    height:25px;
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:30px;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:#2ecc71;
+    transition:0.4s;
+}
+
+.question-card{
+    background:white;
+    padding:25px;
+    border-radius:16px;
+    margin-bottom:30px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+.question-title{
+    font-size:22px;
+    margin-bottom:20px;
+    color:#0055aa;
+}
+
+.level{
+    display:inline-block;
+    padding:5px 12px;
+    border-radius:20px;
+    color:white;
+    font-size:14px;
+    margin-bottom:15px;
+}
+
+.easy{
+    background:#2ecc71;
+}
+
+.medium{
+    background:#f39c12;
+}
+
+.hard{
+    background:#e74c3c;
+}
+
+.options{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.option-btn{
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:#ecf0f1;
+    cursor:pointer;
+    transition:0.3s;
+    font-size:16px;
+}
+
+.option-btn:hover{
+    background:#dfe6e9;
+}
+
+.correct{
+    background:#2ecc71 !important;
+    color:white;
+}
+
+.wrong{
+    background:#e74c3c !important;
+    color:white;
+}
+
+.explanation{
+    margin-top:20px;
+    padding:20px;
+    background:#f8f9fa;
+    border-left:5px solid #3498db;
+    border-radius:10px;
+    display:none;
+}
+
+.tip{
+    margin-top:15px;
+    background:#fff3cd;
+    padding:15px;
+    border-radius:10px;
+}
+
+.score-box{
+    text-align:center;
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    display:none;
+}
+
+.score-box h2{
+    color:#0055aa;
+    margin-bottom:15px;
+}
+
+.reset-btn{
+    margin-top:20px;
+    padding:14px 30px;
+    border:none;
+    border-radius:12px;
+    background:#0055aa;
+    color:white;
+    cursor:pointer;
+    font-size:18px;
+}
+
+@media(max-width:700px){
+
+    .options{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+    <h1>ĐỀ THI TRẮC NGHIỆM</h1>
+    <p>Phụ thuộc tuyến tính & Độc lập tuyến tính</p>
+</header>
+
+<div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div id="quiz"></div>
+
+<div class="score-box" id="scoreBox">
+    <h2>KẾT QUẢ</h2>
+    <h3 id="scoreText"></h3>
+
+    <button class="reset-btn" onclick="location.reload()">
+        Làm lại
+    </button>
+</div>
+
+</div>
+
+<script>
+
+const questions = [
+
+{
+    type:"Lý thuyết",
+    level:"easy",
+    question:"Hai vector độc lập tuyến tính khi:",
+    options:[
+        "Cùng phương",
+        "Không cùng phương",
+        "Có cùng độ dài",
+        "Vuông góc"
+    ],
+    answer:1,
+    explanation:"Hai vector độc lập tuyến tính nếu không vector nào là bội số của vector còn lại.",
+    tip:"Nhìn nhanh: cùng phương ⇒ phụ thuộc."
+},
+
+{
+    type:"Lý thuyết",
+    level:"easy",
+    question:"Nếu $v_2 = 3v_1$ thì hai vector:",
+    options:[
+        "Độc lập",
+        "Phụ thuộc",
+        "Vuông góc",
+        "Không xác định"
+    ],
+    answer:1,
+    explanation:"Một vector biểu diễn được bằng vector còn lại nên phụ thuộc tuyến tính.",
+    tip:"Có dạng $v_2 = kv_1$ ⇒ phụ thuộc ngay."
+},
+
+{
+    type:"Lý thuyết",
+    level:"easy",
+    question:"Điều kiện để độc lập tuyến tính là:",
+    options:[
+        "$c_1=c_2=0$ là nghiệm duy nhất",
+        "Có vô số nghiệm",
+        "Không có nghiệm",
+        "Tồn tại nghiệm khác 0"
+    ],
+    answer:0,
+    explanation:"Chỉ tồn tại nghiệm tầm thường.",
+    tip:"Độc lập ⇒ chỉ nghiệm 0."
+},
+
+{
+    type:"Lý thuyết",
+    level:"medium",
+    question:"Nếu $\\det(A)=0$ thì:",
+    options:[
+        "Độc lập",
+        "Phụ thuộc",
+        "Không xác định",
+        "Vuông góc"
+    ],
+    answer:1,
+    explanation:"Định thức bằng 0 ⇒ các vector phụ thuộc tuyến tính.",
+    tip:"det ≠ 0 ⇒ độc lập."
+},
+
+{
+    type:"Lý thuyết",
+    level:"medium",
+    question:"Trong $\\mathbb{R}^3$, có 4 vector thì:",
+    options:[
+        "Luôn độc lập",
+        "Luôn phụ thuộc",
+        "Có thể độc lập",
+        "Không biết"
+    ],
+    answer:1,
+    explanation:"Số vector lớn hơn số chiều ⇒ phụ thuộc.",
+    tip:"n chiều chỉ tối đa n vector độc lập."
+},
+
+{
+    type:"Dễ",
+    level:"easy",
+    question:"Xét $v_1=(1,0), v_2=(0,1)$. Kết luận?",
+    options:[
+        "Phụ thuộc",
+        "Độc lập",
+        "Cùng phương",
+        "Bằng nhau"
+    ],
+    answer:1,
+    explanation:"Hai vector không cùng phương nên độc lập.",
+    tip:"Vector trục Ox và Oy luôn độc lập."
+},
+
+{
+    type:"Dễ",
+    level:"easy",
+    question:"$v_1=(1,2), v_2=(2,4)$ là:",
+    options:[
+        "Độc lập",
+        "Phụ thuộc",
+        "Vuông góc",
+        "Không xác định"
+    ],
+    answer:1,
+    explanation:"$v_2 = 2v_1$.",
+    tip:"Kiểm tra tỉ lệ tọa độ."
+},
+
+{
+    type:"Dễ",
+    level:"easy",
+    question:"$\\det\\begin{pmatrix}1&0\\\\0&1\\end{pmatrix}$ bằng:",
+    options:[
+        "0",
+        "1",
+        "-1",
+        "2"
+    ],
+    answer:1,
+    explanation:"det = 1.",
+    tip:"Ma trận đơn vị luôn det=1."
+},
+
+{
+    type:"Dễ",
+    level:"easy",
+    question:"Ba vector đồng phẳng trong không gian 3D thường:",
+    options:[
+        "Độc lập",
+        "Phụ thuộc",
+        "Vuông góc",
+        "Không xác định"
+    ],
+    answer:1,
+    explanation:"Đồng phẳng ⇒ có thể biểu diễn tuyến tính.",
+    tip:"3D mà cùng mặt phẳng ⇒ phụ thuộc."
+},
+
+{
+    type:"Dễ",
+    level:"easy",
+    question:"$v=(0,0)$ gọi là:",
+    options:[
+        "Vector đơn vị",
+        "Vector không",
+        "Vector pháp tuyến",
+        "Vector độc lập"
+    ],
+    answer:1,
+    explanation:"Đây là vector không.",
+    tip:"Toàn số 0 ⇒ vector không."
+},
+
+{
+    type:"Trung bình",
+    level:"medium",
+    question:"$\\det\\begin{pmatrix}1&2\\\\3&6\\end{pmatrix}$ bằng:",
+    options:[
+        "0",
+        "1",
+        "2",
+        "-2"
+    ],
+    answer:0,
+    explanation:"1×6 − 2×3 = 0.",
+    tip:"det=0 ⇒ phụ thuộc."
+},
+
+{
+    type:"Trung bình",
+    level:"medium",
+    question:"$v_3=(3,3)$ có phải tổ hợp của $(1,1)$?",
+    options:[
+        "Không",
+        "Có",
+        "Không xác định",
+        "Vuông góc"
+    ],
+    answer:1,
+    explanation:"$v_3 = 3(1,1)$.",
+    tip:"Xem có cùng tỉ lệ không."
+},
+
+{
+    type:"Trung bình",
+    level:"medium",
+    question:"Tập nào độc lập tuyến tính?",
+    options:[
+        "$(1,0),(2,0)$",
+        "$(1,1),(2,2)$",
+        "$(1,0),(0,1)$",
+        "$(2,2),(4,4)$"
+    ],
+    answer:2,
+    explanation:"Không cùng phương.",
+    tip:"Nhìn vector chuẩn thường độc lập."
+},
+
+{
+    type:"Trung bình",
+    level:"medium",
+    question:"Nếu tồn tại nghiệm khác 0 cho hệ số $c_i$ thì:",
+    options:[
+        "Độc lập",
+        "Phụ thuộc",
+        "Vuông góc",
+        "Chuẩn hóa"
+    ],
+    answer:1,
+    explanation:"Đó là định nghĩa phụ thuộc tuyến tính.",
+    tip:"Có nghiệm khác 0 ⇒ phụ thuộc."
+},
+
+{
+    type:"Trung bình",
+    level:"medium",
+    question:"Trong $\\mathbb{R}^2$, tối đa bao nhiêu vector độc lập?",
+    options:[
+        "1",
+        "2",
+        "3",
+        "4"
+    ],
+    answer:1,
+    explanation:"Số chiều = 2.",
+    tip:"Tối đa bằng số chiều."
+},
+
+{
+    type:"Khó",
+    level:"hard",
+    question:"$v_1=(1,2,3),v_2=(2,4,6)$ là:",
+    options:[
+        "Độc lập",
+        "Phụ thuộc",
+        "Vuông góc",
+        "Không biết"
+    ],
+    answer:1,
+    explanation:"$v_2 = 2v_1$.",
+    tip:"Kiểm tra tỉ lệ tất cả tọa độ."
+},
+
+{
+    type:"Khó",
+    level:"hard",
+    question:"$\\det\\begin{pmatrix}1&2&3\\\\0&1&4\\\\5&6&0\\end{pmatrix}$ bằng:",
+    options:[
+        "1",
+        "0",
+        "-1",
+        "5"
+    ],
+    answer:0,
+    explanation:"Tính định thức ra 1 nên độc lập.",
+    tip:"det ≠ 0 ⇒ độc lập."
+},
+
+{
+    type:"Khó",
+    level:"hard",
+    question:"Trong $\\mathbb{R}^3$, 3 vector độc lập khi:",
+    options:[
+        "Đồng phẳng",
+        "Không đồng phẳng",
+        "Cùng phương",
+        "Bằng nhau"
+    ],
+    answer:1,
+    explanation:"Không đồng phẳng ⇒ tạo đủ 3 chiều.",
+    tip:"3 hướng khác nhau trong không gian."
+},
+
+{
+    type:"Khó",
+    level:"hard",
+    question:"Nếu một vector biểu diễn được bằng các vector khác thì:",
+    options:[
+        "Độc lập",
+        "Phụ thuộc",
+        "Trực chuẩn",
+        "Không biết"
+    ],
+    answer:1,
+    explanation:"Đây chính là phụ thuộc tuyến tính.",
+    tip:"Biểu diễn được ⇒ dư thừa thông tin."
+},
+
+{
+    type:"Khó",
+    level:"hard",
+    question:"Trong AI, phụ thuộc tuyến tính gây:",
+    options:[
+        "Giảm dữ liệu dư thừa",
+        "Tăng chiều không cần thiết",
+        "Tăng tốc GPU",
+        "Không ảnh hưởng"
+    ],
+    answer:1,
+    explanation:"Có sự dư thừa dữ liệu.",
+    tip:"Feature trùng nhau ⇒ dư thông tin."
+}
+
+];
+
+const quiz = document.getElementById("quiz");
+
+let score = 0;
+let answered = 0;
+
+questions.forEach((q,index)=>{
+
+    const card = document.createElement("div");
+    card.className = "question-card";
+
+    card.innerHTML = `
+        <div class="level ${q.level}">
+            ${q.type} - ${q.level.toUpperCase()}
+        </div>
+
+        <div class="question-title">
+            Câu ${index+1}: ${q.question}
+        </div>
+
+        <div class="options">
+            ${q.options.map((opt,i)=>
+                `<button class="option-btn"
+                    onclick="checkAnswer(this,${i},${q.answer},${index})">
+                    ${String.fromCharCode(65+i)}. ${opt}
+                </button>`
+            ).join("")}
+        </div>
+
+        <div class="explanation" id="exp${index}">
+            <h3>Giải thích</h3>
+            <p>${q.explanation}</p>
+
+            <div class="tip">
+                💡 Mẹo nhanh: ${q.tip}
+            </div>
+        </div>
+    `;
+
+    quiz.appendChild(card);
+
+});
+
+function checkAnswer(btn,selected,correct,index){
+
+    const parent = btn.parentElement;
+    const buttons = parent.querySelectorAll(".option-btn");
+
+    buttons.forEach(b=>b.disabled=true);
+
+    if(selected===correct){
+
+        btn.classList.add("correct");
+        score++;
+
+    }else{
+
+        btn.classList.add("wrong");
+        buttons[correct].classList.add("correct");
+
+    }
+
+    document.getElementById("exp"+index).style.display="block";
+
+    answered++;
+
+    updateProgress();
+
+    if(answered===questions.length){
+
+        showScore();
+
+    }
+
+}
+
+function updateProgress(){
+
+    const percent = (answered/questions.length)*100;
+
+    document.getElementById("progressBar").style.width =
+        percent + "%";
+
+}
+
+function showScore(){
+
+    const scoreBox = document.getElementById("scoreBox");
+
+    scoreBox.style.display = "block";
+
+    let rank = "";
+
+    if(score>=18){
+
+        rank = "Xuất sắc";
+
+    }else if(score>=15){
+
+        rank = "Giỏi";
+
+    }else if(score>=10){
+
+        rank = "Khá";
+
+    }else{
+
+        rank = "Cần ôn thêm";
+
+    }
+
+    document.getElementById("scoreText").innerHTML = `
+        Bạn đúng ${score}/20 câu <br><br>
+        Xếp loại: <b>${rank}</b>
+    `;
+
+}
+
+</script>
+
+</body>
+</html>
